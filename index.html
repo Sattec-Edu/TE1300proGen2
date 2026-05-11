@@ -1,34 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image.prod.js"></script>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
-  </head>
-  <body>
-    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-assets>
-        <img id="frameImg" src="https://drive.google.com/uc?export=download&id=1TIpDe-sh__Thaj1Kx8qKPTSrG9TKT361">
-        <video id="screenVideo" src="https://drive.google.com/uc?export=download&id=1jmR2NyNPdAfhiMNpLB92QJJy8l3lS4Ow" loop="true" crossorigin="anonymous"></video>
-      </a-assets>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Screen AR</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        body { margin: 0; background: #000; }
+        model-viewer { width: 100vw; height: 100vh; }
+        .btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; background: #1a73e8; color: white; border: none; border-radius: 10px; font-weight: bold; z-index: 10; }
+    </style>
+</head>
+<body>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-image src="#frameImg" position="0 0 0" height="0.6" width="1" opacity="1"></a-image>
-        <a-video src="#screenVideo" position="0 0 0.01" height="0.5" width="0.9"></a-video>
-      </a-entity>
-    </a-scene>
-
-    <button id="playBtn" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:15px; z-index:999; background:#1a73e8; color:white; border:none; border-radius:10px;">تشغيل الشاشة التفاعلية</button>
+    <model-viewer 
+        id="viewer"
+        ar ar-modes="webxr scene-viewer quick-look" 
+        ar-placement="wall" 
+        camera-controls 
+        poster="https://drive.google.com/uc?export=download&id=1TIpDe-sh__Thaj1Kx8qKPTSrG9TKT361">
+        
+        <button slot="ar-button" class="btn">عرض الشاشة على الجدار 📱</button>
+    </model-viewer>
 
     <script>
-      const btn = document.querySelector("#playBtn");
-      btn.addEventListener('click', () => {
-        document.querySelector("#screenVideo").play();
-        btn.style.display = "none";
-      });
+        const viewer = document.querySelector('#viewer');
+        const videoUrl = "https://drive.google.com/uc?export=download&id=1jmR2NyNPdAfhiMNpLB92QJJy8l3lS4Ow";
+        
+        // بمجرد دخول العميل لوضع الـ AR، سنقوم بتبديل المحتوى بالفيديو
+        viewer.addEventListener('ar-status', (event) => {
+            if(event.detail.status === 'object-placed') {
+                console.log("تم وضع الشاشة على الجدار بنجاح");
+            }
+        });
     </script>
-  </body>
+</body>
 </html>
