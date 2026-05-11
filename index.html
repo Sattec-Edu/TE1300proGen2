@@ -1,30 +1,34 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Screen AR</title>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-</head>
-<body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
-        <a-assets>
-            <video id="vid" src="https://drive.google.com/uc?export=download&id=1jmR2NyNPdAfhiMNpLB92QJJy8l3lS4Ow" loop="true" crossorigin="anonymous"></video>
-            <img id="frame" src="https://drive.google.com/uc?export=download&id=1TIpDe-sh__Thaj1Kx8qKPTSrG9TKT361">
-        </a-assets>
+    <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+  </head>
+  <body>
+    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-assets>
+        <img id="frameImg" src="https://drive.google.com/uc?export=download&id=1TIpDe-sh__Thaj1Kx8qKPTSrG9TKT361">
+        <video id="screenVideo" src="https://drive.google.com/uc?export=download&id=1jmR2NyNPdAfhiMNpLB92QJJy8l3lS4Ow" loop="true" crossorigin="anonymous"></video>
+      </a-assets>
 
-        <a-marker preset="hiro">
-            <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.3" height="1.3"></a-image>
-            <a-video src="#vid" position="0 0.02 0" rotation="-90 0 0" width="2" height="1.1"></a-video>
-        </a-marker>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <a-entity camera></a-entity>
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-image src="#frameImg" position="0 0 0" height="0.6" width="1" opacity="1"></a-image>
+        <a-video src="#screenVideo" position="0 0 0.01" height="0.5" width="0.9"></a-video>
+      </a-entity>
     </a-scene>
 
-    <div style="position: fixed; bottom: 20px; width: 100%; text-align: center; z-index: 999;">
-        <button onclick="document.querySelector('#vid').play();" style="padding: 15px; border-radius: 10px; border: none; background: #1a73e8; color: white; font-weight: bold;">
-            تشغيل العرض التفاعلي ▶️
-        </button>
-    </div>
-</body>
+    <button id="playBtn" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:15px; z-index:999; background:#1a73e8; color:white; border:none; border-radius:10px;">تشغيل الشاشة التفاعلية</button>
+
+    <script>
+      const btn = document.querySelector("#playBtn");
+      btn.addEventListener('click', () => {
+        document.querySelector("#screenVideo").play();
+        btn.style.display = "none";
+      });
+    </script>
+  </body>
 </html>
