@@ -3,51 +3,83 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR - Final Version</title>
+    <title>Sattec Interactive Datasheet</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        /* تنسيق الزر ليكون في المنتصف تماماً */
-        .controls {
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* شعار الشركة في الأعلى */
+        .top-logo {
             position: fixed;
-            bottom: 40px;
-            left: 50%;
-            /* هذه الخاصية هي السر في التوسط الحقيقي */
-            transform: translateX(-50%); 
-            z-index: 1000;
-            width: 80%; /* تحديد عرض لضمان التناسق */
-            max-width: 300px;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
             text-align: center;
         }
+        .top-logo img { width: 80px; height: auto; }
 
+        /* تذييل الصفحة مع معلومات التواصل */
+        .footer-info {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            width: 90%;
+            text-align: center;
+            color: white;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* زر التشغيل */
+        .controls {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2100;
+        }
         #playBtn {
-            width: 100%;
-            padding: 15px 20px;
+            padding: 15px 30px;
             border-radius: 50px;
             border: none;
             background: #1a73e8;
             color: white;
             font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             cursor: pointer;
-            white-space: nowrap;
         }
     </style>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
-    <a-scene 
-        embedded 
-        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
-        vr-mode-ui="enabled: false">
+<body>
+    <!-- الشعار ومعلومات التواصل -->
+    <div class="top-logo">
+        <div style="font-weight: bold; color: #1a73e8;">SATTEC</div>
+    </div>
 
+    <div class="footer-info">
+        <p>للتواصل: info@sattec.com | الرقم الموحد: 9200XXXXX</p>
+    </div>
+
+    <div class="controls">
+        <button id="playBtn">ابدأ العرض التفاعلي ▶️</button>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <a-marker preset="hiro">
+        <!-- سنستخدم العلامة كـ Trigger فقط -->
+        <a-marker preset="hiro" id="marker">
             <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
             <a-video src="#vid" position="0 0.05 0" rotation="-90 0 0" width="2.2" height="1.2"></a-video>
         </a-marker>
@@ -55,25 +87,31 @@
         <a-entity camera></a-entity>
     </a-scene>
 
-    <!-- الحاوية المتوسطة للزر -->
-    <div class="controls">
-        <button id="playBtn">تشغيل العرض التفاعلي ▶️</button>
-    </div>
-
     <script>
         const btn = document.getElementById('playBtn');
         const video = document.getElementById('vid');
-        
+        const marker = document.getElementById('marker');
+        let isVideoPlaying = false;
+
         btn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
                 btn.innerHTML = "إيقاف مؤقت ⏸️";
                 btn.style.background = "#d93025";
+                isVideoPlaying = true;
             } else {
                 video.pause();
-                btn.innerHTML = "تشغيل العرض التفاعلي ▶️";
+                btn.innerHTML = "ابدأ العرض التفاعلي ▶️";
                 btn.style.background = "#1a73e8";
+                isVideoPlaying = false;
             }
+        });
+
+        // ميزة الاستمرارية: إذا خرج عن العلامة يظل الفيديو متاحاً
+        marker.addEventListener('markerLost', function() {
+            // هنا يمكنك إضافة كود لجعل الفيديو يظهر في منتصف الشاشة كـ Overlay
+            // ولكن حالياً سنتركه يستمر في العمل صوتياً حتى يعود للعلامة
+            console.log("Marker Lost - Video continues in background");
         });
     </script>
 </body>
