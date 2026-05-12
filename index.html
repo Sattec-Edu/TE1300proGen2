@@ -3,57 +3,61 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR | Stable Solution</title>
+    <title>Sattec Final Stable AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* التوسط المطلق (Flexbox) لضمان المركزية */
-        .full-center {
+        /* التوسط المطلق باستخدام Flexbox */
+        .ui-layer {
             position: fixed; left: 0; width: 100%;
-            display: flex; justify-content: center; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 2000; pointer-events: none;
         }
         .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.8); padding: 15px 0; flex-direction: column; align-items: center; }
-        .controls { bottom: 90px; pointer-events: auto; }
+        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 18px 0; }
+        .controls { bottom: 95px; pointer-events: auto; }
 
-        .brand-card {
-            background: white; padding: 10px 30px; border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); color: #1a73e8; font-weight: bold;
+        .brand-tag {
+            background: white; padding: 10px 30px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); color: #1a73e8; font-weight: bold; font-size: 20px;
         }
 
         button {
-            padding: 15px 30px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; margin: 0 5px;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.5);
+            padding: 14px 28px; border-radius: 50px; border: none;
+            color: white; font-weight: bold; cursor: pointer; margin: 0 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 120px;
         }
     </style>
 </head>
 
 <body>
-    <div class="full-center header"><div class="brand-card">SATTEC</div></div>
+    <!-- الهوية متوسطة تماماً -->
+    <div class="ui-layer header"><div class="brand-tag">SATTEC</div></div>
 
-    <div class="full-center footer">
-        <div style="color: white; font-size: 14px;">info@sattec.com | 920000000</div>
+    <!-- المعلومات متوسطة تماماً -->
+    <div class="ui-layer footer">
+        <div style="color: white; font-size: 15px;">info@sattec.com.sa | الرقم الموحد: 920008934</div>
     </div>
 
-    <div class="full-center controls">
+    <!-- الأزرار متوسطة تماماً -->
+    <div class="ui-layer controls">
         <button id="playBtn" style="background: #1a73e8;">تشغيل ▶️</button>
         <button id="muteBtn" style="background: #5f6368;">صوت 🔊</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frameImg" src="frame.png">
         </a-assets>
 
-        <!-- استبدل الرابط أدناه بملف الباترن البسيط الجديد -->
-        <a-marker type="pattern" url="pattern-qr-code (3).patt">
+        <!-- استخدام المعرف الجديد -->
+        <a-marker type="pattern" url="sattec-logo.patt">
             <a-entity rotation="-90 0 0">
-                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0"></a-image>
-                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.02"></a-plane>
+                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0.01"></a-image>
+                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.04"></a-plane>
             </a-entity>
         </a-marker>
 
@@ -65,15 +69,15 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // إجبار المتصفح على رسم الفيديو لضمان ظهوره
-        function update() {
+        // إجبار التحديث المستمر للفيديو لضمان الرؤية
+        function refresh() {
             if (!video.paused) {
                 const mesh = document.querySelector('a-plane').getObject3D('mesh');
                 if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
             }
-            requestAnimationFrame(update);
+            requestAnimationFrame(refresh);
         }
-        update();
+        refresh();
 
         playBtn.addEventListener('click', () => {
             if (video.paused) { video.play(); playBtn.innerHTML = "إيقاف ⏸️"; playBtn.style.background = "#d93025"; }
