@@ -3,92 +3,76 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec Final Stable AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        
-        /* التوسط المطلق باستخدام Flexbox */
-        .ui-layer {
-            position: fixed; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 2000; pointer-events: none;
-        }
+        .ui-layer { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 2000; pointer-events: none; }
         .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 18px 0; }
+        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 15px 0; color: white; flex-direction: column; align-items: center; }
         .controls { bottom: 95px; pointer-events: auto; }
-
-        .brand-tag {
-            background: white; padding: 10px 30px; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); color: #1a73e8; font-weight: bold; font-size: 20px;
-        }
-
-        button {
-            padding: 14px 28px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; margin: 0 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 120px;
-        }
+        .box { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        button { padding: 14px 28px; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; margin: 0 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
     </style>
 </head>
+<body style="margin: 0; overflow: hidden;">
 
-<body>
-    <!-- الهوية متوسطة تماماً -->
-    <div class="ui-layer header"><div class="brand-tag">SATTEC</div></div>
-
-    <!-- المعلومات متوسطة تماماً -->
-    <div class="ui-layer footer">
-        <div style="color: white; font-size: 15px;">info@sattec.com.sa | الرقم الموحد: 920008934</div>
-    </div>
-
-    <!-- الأزرار متوسطة تماماً -->
+    <div class="ui-layer header"><div class="box">SATTEC</div></div>
+    <div class="ui-layer footer"><div>info@sattec.com | 920000000</div></div>
     <div class="ui-layer controls">
-        <button id="playBtn" style="background: #1a73e8;">تشغيل ▶️</button>
-        <button id="muteBtn" style="background: #5f6368;">صوت 🔊</button>
+        <button id="pBtn" style="background: #1a73e8;">تشغيل العرض ▶️</button>
+        <button id="mBtn" style="background: #5f6368;">فتح الصوت 🔊</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
         <a-assets>
+            <!-- استخدام الملفات الموضحة في image_d3d832.png -->
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-            <img id="frameImg" src="frame.png">
+            <img id="frm" src="frame.png">
         </a-assets>
 
-        <!-- استخدام المعرف الجديد -->
+        <!-- الربط بالمعرف sattec-logo.patt الموضح في image_d3d832.png -->
         <a-marker type="pattern" url="sattec-logo.patt">
             <a-entity rotation="-90 0 0">
-                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.04"></a-plane>
+                <a-image src="#frm" width="2.4" height="1.4"></a-image>
+                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
             </a-entity>
         </a-marker>
-
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        const video = document.getElementById('vid');
-        const playBtn = document.getElementById('playBtn');
-        const muteBtn = document.getElementById('muteBtn');
+        const v = document.getElementById('vid');
+        const pBtn = document.getElementById('pBtn');
+        const mBtn = document.getElementById('mBtn');
 
-        // إجبار التحديث المستمر للفيديو لضمان الرؤية
-        function refresh() {
-            if (!video.paused) {
+        // أهم خطوة: التفاعل الأول يفك حظر الفيديو والصوت
+        pBtn.addEventListener('click', function() {
+            if (v.paused) {
+                v.play();
+                pBtn.innerHTML = "إيقاف مؤقت ⏸️";
+                pBtn.style.background = "#d93025";
+            } else {
+                v.pause();
+                pBtn.innerHTML = "تشغيل العرض ▶️";
+                pBtn.style.background = "#1a73e8";
+            }
+        });
+
+        mBtn.addEventListener('click', function() {
+            v.muted = !v.muted;
+            mBtn.innerHTML = v.muted ? "فتح الصوت 🔊" : "كتم الصوت 🔇";
+            mBtn.style.background = v.muted ? "#5f6368" : "#34a853";
+        });
+
+        // إجبار المتصفح على رندر الفيديو (Fix لصوت بدون صورة)
+        function renderLoop() {
+            if (!v.paused) {
                 const mesh = document.querySelector('a-plane').getObject3D('mesh');
                 if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
             }
-            requestAnimationFrame(refresh);
+            requestAnimationFrame(renderLoop);
         }
-        refresh();
-
-        playBtn.addEventListener('click', () => {
-            if (video.paused) { video.play(); playBtn.innerHTML = "إيقاف ⏸️"; playBtn.style.background = "#d93025"; }
-            else { video.pause(); playBtn.innerHTML = "تشغيل ▶️"; playBtn.style.background = "#1a73e8"; }
-        });
-
-        muteBtn.addEventListener('click', () => {
-            video.muted = !video.muted;
-            muteBtn.innerHTML = video.muted ? "صوت 🔊" : "كتم 🔇";
-            muteBtn.style.background = video.muted ? "#5f6368" : "#34a853";
-        });
+        renderLoop();
     </script>
 </body>
 </html>
