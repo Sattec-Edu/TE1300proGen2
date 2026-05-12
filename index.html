@@ -3,83 +3,90 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec Interactive Datasheet</title>
+    <title>Sattec Interactive System</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* شعار الشركة في الأعلى */
-        .top-logo {
+        /* الهوية البصرية لشركة Sattec */
+        .header-brand {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             z-index: 2000;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
         }
-        .top-logo img { width: 80px; height: auto; }
 
-        /* تذييل الصفحة مع معلومات التواصل */
-        .footer-info {
+        .footer-contact {
             position: fixed;
-            bottom: 10px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2000;
-            width: 90%;
+            width: 100%;
             text-align: center;
             color: white;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-            font-size: 12px;
-            pointer-events: none;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 0;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
-        /* زر التشغيل */
         .controls {
             position: fixed;
-            bottom: 70px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2100;
         }
+
         #playBtn {
-            padding: 15px 30px;
+            padding: 16px 32px;
             border-radius: 50px;
             border: none;
             background: #1a73e8;
             color: white;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
             cursor: pointer;
+            transition: all 0.3s;
         }
     </style>
 </head>
 
 <body>
-    <!-- الشعار ومعلومات التواصل -->
-    <div class="top-logo">
-        <div style="font-weight: bold; color: #1a73e8;">SATTEC</div>
+    <!-- الهوية البصرية -->
+    <div class="header-brand">
+        <span style="font-weight: bold; color: #1a73e8; font-size: 18px;">SATTEC</span>
     </div>
 
-    <div class="footer-info">
-        <p>للتواصل: info@sattec.com | الرقم الموحد: 9200XXXXX</p>
+    <div class="footer-contact">
+        Email: info@sattec.com | Unified No: 920008934
     </div>
 
     <div class="controls">
-        <button id="playBtn">ابدأ العرض التفاعلي ▶️</button>
+        <button id="playBtn">عرض المحتوى التفاعلي ▶️</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene 
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+        vr-mode-ui="enabled: false">
+
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- سنستخدم العلامة كـ Trigger فقط -->
-        <a-marker preset="hiro" id="marker">
+        <!-- تغيير preset="hiro" إلى العلامة المخصصة مستقبلاً -->
+        <a-marker preset="hiro" id="mainMarker">
             <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
             <a-video src="#vid" position="0 0.05 0" rotation="-90 0 0" width="2.2" height="1.2"></a-video>
         </a-marker>
@@ -90,28 +97,26 @@
     <script>
         const btn = document.getElementById('playBtn');
         const video = document.getElementById('vid');
-        const marker = document.getElementById('marker');
-        let isVideoPlaying = false;
-
+        const marker = document.getElementById('mainMarker');
+        
+        // تشغيل وإيقاف الفيديو
         btn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
                 btn.innerHTML = "إيقاف مؤقت ⏸️";
                 btn.style.background = "#d93025";
-                isVideoPlaying = true;
             } else {
                 video.pause();
-                btn.innerHTML = "ابدأ العرض التفاعلي ▶️";
+                btn.innerHTML = "عرض المحتوى التفاعلي ▶️";
                 btn.style.background = "#1a73e8";
-                isVideoPlaying = false;
             }
         });
 
-        // ميزة الاستمرارية: إذا خرج عن العلامة يظل الفيديو متاحاً
-        marker.addEventListener('markerLost', function() {
-            // هنا يمكنك إضافة كود لجعل الفيديو يظهر في منتصف الشاشة كـ Overlay
-            // ولكن حالياً سنتركه يستمر في العمل صوتياً حتى يعود للعلامة
-            console.log("Marker Lost - Video continues in background");
+        // ميزة الثبات: إذا ضاعت العلامة، الفيديو يستمر في العمل في "الفراغ"
+        // يمكننا تطوير الكود لجعل الفيديو يلتصق بالشاشة (HUD) عند فقدان العلامة
+        marker.addEventListener('markerLost', () => {
+            console.log("Marker lost - checking persistence...");
+            // في النسخة القادمة سنضيف كود الـ Fullscreen Overlay هنا
         });
     </script>
 </body>
