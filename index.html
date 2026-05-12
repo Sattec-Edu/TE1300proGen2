@@ -3,65 +3,57 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR | Fixed Precision</title>
+    <title>Sattec AR | Stable Solution</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* التوسيط المطلق والنهائي */
-        .flex-center {
+        /* التوسط المطلق (Flexbox) لضمان المركزية */
+        .full-center {
             position: fixed; left: 0; width: 100%;
             display: flex; justify-content: center; z-index: 2000;
         }
-        .top-brand { top: 20px; }
-        .bottom-info { 
-            bottom: 0; background: rgba(0,0,0,0.85); 
-            padding: 20px 0; flex-direction: column; align-items: center;
-        }
-        .btn-container { bottom: 100px; gap: 15px; pointer-events: auto; }
+        .header { top: 20px; }
+        .footer { bottom: 0; background: rgba(0,0,0,0.8); padding: 15px 0; flex-direction: column; align-items: center; }
+        .controls { bottom: 90px; pointer-events: auto; }
 
-        .tag {
-            background: white; padding: 10px 30px; border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8;
+        .brand-card {
+            background: white; padding: 10px 30px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); color: #1a73e8; font-weight: bold;
         }
 
         button {
             padding: 15px 30px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 120px;
+            color: white; font-weight: bold; cursor: pointer; margin: 0 5px;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 
 <body>
-    <div class="flex-center top-brand"><div class="tag">SATTEC</div></div>
+    <div class="full-center header"><div class="brand-card">SATTEC</div></div>
 
-    <div class="flex-center bottom-info">
-        <div style="color: white; margin-bottom: 5px;">info@sattec.com</div>
-        <div style="color: rgba(255,255,255,0.7); font-size: 14px;">الرقم الموحد: 920000000</div>
+    <div class="full-center footer">
+        <div style="color: white; font-size: 14px;">info@sattec.com | 920000000</div>
     </div>
 
-    <div class="flex-center btn-container">
+    <div class="full-center controls">
         <button id="playBtn" style="background: #1a73e8;">تشغيل ▶️</button>
         <button id="muteBtn" style="background: #5f6368;">صوت 🔊</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frameImg" src="frame.png">
         </a-assets>
 
-        <!-- إضافة معامل التنعيم (Smoothing) العالي لامتصاص الحركة المجنونة -->
-        <a-marker type="pattern" url="pattern-qr-code (3).patt" 
-                  smooth="true" smoothCount="15" smoothTolerance="0.05" smoothThreshold="10">
-            
+        <!-- استبدل الرابط أدناه بملف الباترن البسيط الجديد -->
+        <a-marker type="pattern" url="pattern-qr-code (3).patt">
             <a-entity rotation="-90 0 0">
-                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <!-- استخدام shader: flat مع تثبيت الـ Opacity لضمان الرندر -->
-                <a-plane material="src: #vid; shader: flat; transparent: true; opacity: 1;" 
-                         width="2.2" height="1.2" position="0 0 0.05"></a-plane>
+                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0"></a-image>
+                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.02"></a-plane>
             </a-entity>
         </a-marker>
 
@@ -73,29 +65,19 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // إجبار المتصفح على تحديث الصورة يدوياً لمنع مشكلة "الصوت فقط"
-        function renderLoop() {
+        // إجبار المتصفح على رسم الفيديو لضمان ظهوره
+        function update() {
             if (!video.paused) {
-                const plane = document.querySelector('a-plane');
-                if (plane && plane.getObject3D('mesh')) {
-                    const material = plane.getObject3D('mesh').material;
-                    if (material.map) material.map.needsUpdate = true;
-                }
+                const mesh = document.querySelector('a-plane').getObject3D('mesh');
+                if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
             }
-            requestAnimationFrame(renderLoop);
+            requestAnimationFrame(update);
         }
-        renderLoop();
+        update();
 
         playBtn.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
-                playBtn.innerHTML = "إيقاف ⏸️";
-                playBtn.style.background = "#d93025";
-            } else {
-                video.pause();
-                playBtn.innerHTML = "تشغيل ▶️";
-                playBtn.style.background = "#1a73e8";
-            }
+            if (video.paused) { video.play(); playBtn.innerHTML = "إيقاف ⏸️"; playBtn.style.background = "#d93025"; }
+            else { video.pause(); playBtn.innerHTML = "تشغيل ▶️"; playBtn.style.background = "#1a73e8"; }
         });
 
         muteBtn.addEventListener('click', () => {
