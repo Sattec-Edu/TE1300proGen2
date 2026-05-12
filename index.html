@@ -3,40 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR System</title>
+    <title>Sattec AR Pro</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; }
         
-        /* التوسط المطلق للهوية البصرية */
+        /* التوسط المطلق */
         .header-brand {
             position: fixed; top: 20px; left: 0; width: 100%;
             display: flex; justify-content: center; z-index: 2000;
         }
         .header-box {
-            background: white; padding: 10px 25px; border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8; font-size: 20px;
+            background: white; padding: 10px 25px; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8; font-size: 18px;
         }
 
-        /* تذييل الصفحة - متوسط تماماً */
         .footer-contact {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 0, 0, 0.85); color: white;
-            padding: 15px 0; text-align: center; z-index: 2000; font-size: 14px;
+            background: rgba(0, 0, 0, 0.8); color: white;
+            padding: 15px 0; text-align: center; z-index: 2000; font-size: 13px;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* حاوية الأزرار - متوسطة بدقة */
         .ui-controls {
-            position: fixed; bottom: 95px; left: 0; width: 100%;
+            position: fixed; bottom: 85px; left: 0; width: 100%;
             display: flex; justify-content: center; gap: 15px; z-index: 2100;
         }
 
         button {
             padding: 12px 28px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; font-size: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 110px;
+            color: white; font-weight: bold; cursor: pointer; font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 100px;
         }
         #playBtn { background: #1a73e8; }
         #muteBtn { background: #5f6368; }
@@ -53,22 +51,27 @@
 
     <div class="ui-controls">
         <button id="playBtn">تشغيل ▶️</button>
-        <button id="muteBtn">كتم 🔇</button>
+        <button id="muteBtn">صوت 🔊</button>
     </div>
 
-    <!-- إعدادات المشهد لضمان رندر الفيديو -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         <a-assets>
+            <!-- أضفنا سطر الفيديو مع إعدادات تقنية لضمان الرندر -->
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- الربط مع الباركود المخصص لك -->
-        <a-marker type="pattern" url="pattern-qr-code (3).patt" id="mainMarker">
-            <!-- الإطار -->
-            <a-image src="#frame" position="0 0.01 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
-            <!-- الفيديو: أضفنا shader: flat لضمان الظهور بدون تأثير الإضاءة -->
-            <a-video src="#vid" position="0 0.1 0" rotation="-90 0 0" width="2.2" height="1.2" material="shader: flat;"></a-video>
+        <a-marker type="pattern" url="pattern-qr-code (3).patt">
+            <!-- الإطار في الأسفل قليلاً -->
+            <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
+            
+            <!-- الفيديو: استخدمنا مادة (Material) يدوية لضمان الربط بالصورة -->
+            <a-entity 
+                geometry="primitive: plane; width: 2.2; height: 1.2" 
+                position="0 0.05 0" 
+                rotation="-90 0 0"
+                material="src: #vid; shader: flat; transparent: true; opacity: 1;">
+            </a-entity>
         </a-marker>
 
         <a-entity camera></a-entity>
@@ -79,12 +82,7 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // إصلاح مشكلة عدم ظهور الفيديو برمجياً
-        window.addEventListener('click', () => {
-            // التفاعل الأول للمستخدم يضمن تحميل الموارد
-            video.load();
-        }, { once: true });
-
+        // أهم خطوة: التأكد من أن الفيديو "جاهز" للرسم
         playBtn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
@@ -100,14 +98,19 @@
         muteBtn.addEventListener('click', () => {
             if (video.muted) {
                 video.muted = false;
-                muteBtn.innerHTML = "صوت 🔊";
-                muteBtn.style.background = "#34a853";
-            } else {
-                video.muted = true;
                 muteBtn.innerHTML = "كتم 🔇";
                 muteBtn.style.background = "#5f6368";
+            } else {
+                video.muted = true;
+                muteBtn.innerHTML = "صوت 🔊";
+                muteBtn.style.background = "#34a853";
             }
         });
+
+        // حركة برمجية لضمان بدء الرندر
+        window.addEventListener('touchstart', function() {
+            video.load();
+        }, {once: true});
     </script>
 </body>
 </html>
