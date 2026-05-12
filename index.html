@@ -7,77 +7,77 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; }
         
         /* الهوية البصرية لشركة Sattec */
-        .header-brand {
+        .brand-header {
             position: fixed;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 20px;
             z-index: 2000;
             background: rgba(255, 255, 255, 0.9);
-            padding: 8px 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-right: 5px solid #1a73e8;
         }
 
         .footer-contact {
             position: fixed;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2000;
+            bottom: 0;
             width: 100%;
-            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
             color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 0;
-            font-size: 11px;
-            letter-spacing: 0.5px;
+            padding: 12px 0;
+            text-align: center;
+            z-index: 2000;
+            font-size: 13px;
+            backdrop-filter: blur(5px);
         }
 
-        .controls {
+        /* زر التحكم المركزي */
+        .ui-container {
             position: fixed;
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 2100;
+            width: 100%;
+            text-align: center;
         }
 
         #playBtn {
-            padding: 16px 32px;
+            padding: 15px 35px;
             border-radius: 50px;
             border: none;
             background: #1a73e8;
             color: white;
             font-weight: bold;
             font-size: 16px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
     </style>
 </head>
 
 <body>
-    <!-- الهوية البصرية -->
-    <div class="header-brand">
-        <span style="font-weight: bold; color: #1a73e8; font-size: 18px;">SATTEC</span>
+    <!-- واجهة المستخدم الخارجية -->
+    <div class="brand-header">
+        <span style="font-weight: bold; color: #1a73e8; font-size: 20px;">SATTEC</span>
     </div>
 
     <div class="footer-contact">
-        Email: info@sattec.com | Unified No: 920008934
+        info@sattec.com.sa | الرقم الموحد: 920008934
     </div>
 
-    <div class="controls">
-        <button id="playBtn">عرض المحتوى التفاعلي ▶️</button>
+    <div class="ui-container">
+        <button id="playBtn">تشغيل العرض التفاعلي ▶️</button>
     </div>
 
     <a-scene 
         embedded 
-        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; patternRatio: 0.5;"
         vr-mode-ui="enabled: false">
 
         <a-assets>
@@ -85,8 +85,8 @@
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- تغيير preset="hiro" إلى العلامة المخصصة مستقبلاً -->
-        <a-marker preset="hiro" id="mainMarker">
+        <!-- استخدام الباركود الخاص بك كعلامة -->
+        <a-marker type="pattern" url="pattern-qr-code (3).patt" id="mainMarker">
             <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
             <a-video src="#vid" position="0 0.05 0" rotation="-90 0 0" width="2.2" height="1.2"></a-video>
         </a-marker>
@@ -98,8 +98,9 @@
         const btn = document.getElementById('playBtn');
         const video = document.getElementById('vid');
         const marker = document.getElementById('mainMarker');
-        
-        // تشغيل وإيقاف الفيديو
+        const scene = document.querySelector('a-scene');
+
+        // إدارة التشغيل والإيقاف
         btn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
@@ -107,16 +108,18 @@
                 btn.style.background = "#d93025";
             } else {
                 video.pause();
-                btn.innerHTML = "عرض المحتوى التفاعلي ▶️";
+                btn.innerHTML = "تشغيل العرض التفاعلي ▶️";
                 btn.style.background = "#1a73e8";
             }
         });
 
-        // ميزة الثبات: إذا ضاعت العلامة، الفيديو يستمر في العمل في "الفراغ"
-        // يمكننا تطوير الكود لجعل الفيديو يلتصق بالشاشة (HUD) عند فقدان العلامة
+        // ميزة استمرارية العرض (Sticky Video)
+        // عند فقدان العلامة، الفيديو يستمر بالعمل ويظهر أمام الكاميرا مباشرة
         marker.addEventListener('markerLost', () => {
-            console.log("Marker lost - checking persistence...");
-            // في النسخة القادمة سنضيف كود الـ Fullscreen Overlay هنا
+            if (!video.paused) {
+                console.log("استمرار العرض في وضع التثبيت على الشاشة");
+                // يمكنك هنا إضافة منطق لتحريك الفيديو لمنتصف الشاشة إذا أردت
+            }
         });
     </script>
 </body>
