@@ -3,67 +3,65 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR | Stable Pro</title>
+    <title>Sattec AR | Fixed Precision</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* التوسط المطلق والنهائي للمعلومات */
-        .ui-fixed {
+        /* التوسيط المطلق والنهائي */
+        .flex-center {
             position: fixed; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 2000; pointer-events: none;
+            display: flex; justify-content: center; z-index: 2000;
         }
-        .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 15px 0; }
-        .controls { bottom: 90px; pointer-events: auto; }
+        .top-brand { top: 20px; }
+        .bottom-info { 
+            bottom: 0; background: rgba(0,0,0,0.85); 
+            padding: 20px 0; flex-direction: column; align-items: center;
+        }
+        .btn-container { bottom: 100px; gap: 15px; pointer-events: auto; }
 
-        .brand-box {
-            background: white; padding: 10px 25px; border-radius: 12px;
+        .tag {
+            background: white; padding: 10px 30px; border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8;
         }
 
         button {
-            padding: 14px 28px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; margin: 0 8px;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.5); pointer-events: auto;
+            padding: 15px 30px; border-radius: 50px; border: none;
+            color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 120px;
         }
     </style>
 </head>
 
 <body>
-    <!-- الهوية البصرية متوسطة تماماً -->
-    <div class="ui-fixed header"><div class="brand-box">SATTEC</div></div>
+    <div class="flex-center top-brand"><div class="tag">SATTEC</div></div>
 
-    <div class="ui-fixed footer">
-        <div style="color: white; font-size: 14px;">info@sattec.com | الرقم الموحد: 920000000</div>
+    <div class="flex-center bottom-info">
+        <div style="color: white; margin-bottom: 5px;">info@sattec.com</div>
+        <div style="color: rgba(255,255,255,0.7); font-size: 14px;">الرقم الموحد: 920000000</div>
     </div>
 
-    <div class="ui-fixed controls">
+    <div class="flex-center btn-container">
         <button id="playBtn" style="background: #1a73e8;">تشغيل ▶️</button>
         <button id="muteBtn" style="background: #5f6368;">صوت 🔊</button>
     </div>
 
-    <!-- إعدادات الكاميرا: تقليل الدقة قليلاً لزيادة الاستقرار ومنع الاهتزاز -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; sourceWidth: 640; sourceHeight: 480;">
-        
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frameImg" src="frame.png">
         </a-assets>
 
-        <!-- إضافة التنعيم (Smoothing) لمنع "الجنون" والحركة العشوائية -->
+        <!-- إضافة معامل التنعيم (Smoothing) العالي لامتصاص الحركة المجنونة -->
         <a-marker type="pattern" url="pattern-qr-code (3).patt" 
-                  smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+                  smooth="true" smoothCount="15" smoothTolerance="0.05" smoothThreshold="10">
             
-            <!-- مجموعة المحتوى مع تدوير وتعديل الارتفاع لمنع تداخل الطبقات -->
-            <a-entity id="content" rotation="-90 0 0">
-                <!-- الإطار الخلفي -->
+            <a-entity rotation="-90 0 0">
                 <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <!-- الفيديو مع shader مسطح لضمان الرؤية -->
-                <a-plane material="src: #vid; shader: flat; side: double;" 
-                         width="2.2" height="1.2" position="0 0 0.03"></a-plane>
+                <!-- استخدام shader: flat مع تثبيت الـ Opacity لضمان الرندر -->
+                <a-plane material="src: #vid; shader: flat; transparent: true; opacity: 1;" 
+                         width="2.2" height="1.2" position="0 0 0.05"></a-plane>
             </a-entity>
         </a-marker>
 
@@ -75,15 +73,18 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // حل مشكلة "صوت بدون صورة": إجبار المحرك على تحديث الخامة
-        function forceUpdate() {
+        // إجبار المتصفح على تحديث الصورة يدوياً لمنع مشكلة "الصوت فقط"
+        function renderLoop() {
             if (!video.paused) {
-                const mesh = document.querySelector('a-plane').getObject3D('mesh');
-                if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
+                const plane = document.querySelector('a-plane');
+                if (plane && plane.getObject3D('mesh')) {
+                    const material = plane.getObject3D('mesh').material;
+                    if (material.map) material.map.needsUpdate = true;
+                }
             }
-            requestAnimationFrame(forceUpdate);
+            requestAnimationFrame(renderLoop);
         }
-        forceUpdate();
+        renderLoop();
 
         playBtn.addEventListener('click', () => {
             if (video.paused) {
