@@ -1,49 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Display AR</title>
-    <!-- مكتبات الواقع المعزز المستقرة -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sattec AR Display</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
+
 <body style="margin: 0; overflow: hidden;">
-    <!-- إعداد المشهد للتعرف على علامة Hiro -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+    <!-- إعدادات arjs معدلة لمنع الزوم وإجبار أبعاد معينة -->
+    <a-scene 
+        embedded 
+        arjs="sourceType: webcam; 
+              displayWidth: 1280; 
+              displayHeight: 720; 
+              sourceWidth: 1280; 
+              sourceHeight: 720; 
+              debugUIEnabled: false; 
+              trackingMethod: best;"
+        vr-mode-ui="enabled: false">
+
         <a-assets>
-            <!-- استدعاء ملفاتك المرفوعة مباشرة -->
+            <!-- ملفاتك المرفوعة على GitHub -->
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- سيظهر المحتوى عند توجيه الكاميرا لعلامة Hiro -->
+        <!-- علامة Hiro -->
         <a-marker preset="hiro">
-            <!-- عرض إطار الشاشة كقاعدة -->
+            <!-- الإطار الأسود -->
             <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
-            <!-- عرض الفيديو فوق الإطار بمليمترات لضمان عدم التداخل -->
+            <!-- الفيديو فوق الإطار -->
             <a-video src="#vid" position="0 0.05 0" rotation="-90 0 0" width="2.2" height="1.2"></a-video>
         </a-marker>
 
+        <!-- الكاميرا بدون زوم رقمي -->
         <a-entity camera></a-entity>
     </a-scene>
 
-    <!-- واجهة التحكم للمستخدم -->
-    <div style="position: fixed; bottom: 20px; width: 100%; text-align: center; z-index: 1000;">
-        <button id="playBtn" style="padding: 15px 35px; border-radius: 50px; border: none; background: #1a73e8; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer;">
+    <!-- واجهة التحكم -->
+    <div style="position: fixed; bottom: 30px; width: 100%; text-align: center; z-index: 1000;">
+        <button id="playBtn" style="
+            padding: 18px 40px; 
+            border-radius: 50px; 
+            border: none; 
+            background: #1a73e8; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 18px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4); 
+            cursor: pointer;
+            transition: 0.3s;">
             تشغيل العرض التفاعلي ▶️
         </button>
     </div>
 
     <script>
-        // تفعيل الفيديو يدوياً لتجاوز قيود المتصفحات
         const btn = document.getElementById('playBtn');
         const video = document.getElementById('vid');
         
         btn.addEventListener('click', () => {
             if (video.paused) {
-                video.play();
-                btn.innerHTML = "إيقاف مؤقت ⏸️";
-                btn.style.background = "#d93025";
+                video.play().then(() => {
+                    btn.innerHTML = "إيقاف مؤقت ⏸️";
+                    btn.style.background = "#d93025";
+                }).catch(err => {
+                    console.log("Error playing video:", err);
+                });
             } else {
                 video.pause();
                 btn.innerHTML = "تشغيل العرض التفاعلي ▶️";
