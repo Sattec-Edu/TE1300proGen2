@@ -3,78 +3,61 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR Final</title>
+    <title>Sattec AR | Stable View</title>
+    <!-- استخدام إصدارات محددة لضمان الاستقرار -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* التوسط المطلق باستخدام الـ Flex */
-        .header-brand {
-            position: fixed; top: 10px; left: 0; width: 100vw;
-            display: flex; justify-content: center; z-index: 2000;
+        /* التوسط المطلق والنهائي */
+        .ui-overlay {
+            position: fixed; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 2000; pointer-events: none;
         }
-        .header-box {
-            background: white; padding: 12px 30px; border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-weight: bold; 
-            color: #1a73e8; font-size: 22px; border: 1px solid #eee;
-        }
+        .header { top: 20px; }
+        .footer { bottom: 0; background: rgba(0,0,0,0.8); padding: 15px 0; }
+        .controls { bottom: 90px; pointer-events: auto; }
 
-        .footer-contact {
-            position: fixed; bottom: 0; left: 0; width: 100vw;
-            background: rgba(0, 0, 0, 0.85); color: white;
-            padding: 20px 0; z-index: 2000; text-align: center;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-
-        .ui-controls {
-            position: fixed; bottom: 100px; left: 0; width: 100vw;
-            display: flex; justify-content: center; gap: 20px; z-index: 2100;
+        .box {
+            background: white; padding: 10px 25px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8;
         }
 
         button {
-            padding: 15px 30px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; font-size: 16px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-width: 120px;
-            transition: 0.2s;
+            padding: 12px 25px; border-radius: 50px; border: none;
+            color: white; font-weight: bold; cursor: pointer; margin: 0 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); pointer-events: auto;
         }
-        #playBtn { background: #1a73e8; }
-        #muteBtn { background: #5f6368; }
     </style>
 </head>
 
 <body>
-    <div class="header-brand"><div class="header-box">SATTEC</div></div>
+    <div class="ui-overlay header"><div class="box">SATTEC</div></div>
 
-    <div class="footer-contact">
-        <div style="font-size: 16px; margin-bottom: 5px;">info@sattec.com</div>
-        <div style="font-size: 14px; opacity: 0.8;">الرقم الموحد: 920000000</div>
+    <div class="ui-overlay footer">
+        <div style="color: white; font-size: 14px;">info@sattec.com | 920000000</div>
     </div>
 
-    <div class="ui-controls">
-        <button id="playBtn">تشغيل ▶️</button>
-        <button id="muteBtn">صوت 🔊</button>
+    <div class="ui-overlay controls">
+        <button id="playBtn" style="background: #1a73e8;">تشغيل ▶️</button>
+        <button id="muteBtn" style="background: #5f6368;">صوت 🔊</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
+    <!-- إعدادات الكاميرا لمنع الاهتزاز (Jitter) -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; canvasWidth: 640; canvasHeight: 480;">
+        
         <a-assets>
-            <!-- أضفنا سطر الفيديو مع crossorigin و muted إجباري للرندر -->
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frameImg" src="frame.png">
         </a-assets>
 
-        <!-- استخدام الباركود الخاص بك (pattern-qr-code (3).patt) -->
-        <a-marker type="pattern" url="pattern-qr-code (3).patt" id="mainMarker">
-            <!-- الإطار -->
-            <a-image src="#frameImg" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
-            
-            <!-- الفيديو باستخدام Mesh مخصص لضمان الرندر -->
-            <a-entity 
-                id="videoEntity"
-                geometry="primitive: plane; width: 2.2; height: 1.2" 
-                position="0 0.05 0" 
-                rotation="-90 0 0"
-                material="src: #vid; shader: flat; transparent: true; side: double;">
+        <!-- استخدام الباركود الخاص بك مع إضافة تنعيم للحركة smooth: true -->
+        <a-marker type="pattern" url="pattern-qr-code (3).patt" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+            <a-entity id="contentGroup" rotation="-90 0 0">
+                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0"></a-image>
+                <a-video src="#vid" width="2.2" height="1.2" position="0 0 0.02" material="shader: flat;"></a-video>
             </a-entity>
         </a-marker>
 
@@ -86,17 +69,15 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // حل مشكلة الرندر في الأندرويد: إجبار التحديث
-        const refreshVideo = () => {
-            if (video.readyState >= 2) {
-                const mesh = document.getElementById('videoEntity').getObject3D('mesh');
-                if (mesh && mesh.material.map) {
-                    mesh.material.map.needsUpdate = true;
-                }
+        // حل مشكلة بريف وكروم: إجبار الفيديو على التحديث يدوياً
+        function syncVideo() {
+            if (!video.paused) {
+                const mesh = document.querySelector('a-video').getObject3D('mesh');
+                if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
             }
-            requestAnimationFrame(refreshVideo);
-        };
-        refreshVideo();
+            requestAnimationFrame(syncVideo);
+        }
+        syncVideo();
 
         playBtn.addEventListener('click', () => {
             if (video.paused) {
@@ -111,15 +92,9 @@
         });
 
         muteBtn.addEventListener('click', () => {
-            if (video.muted) {
-                video.muted = false;
-                muteBtn.innerHTML = "كتم 🔇";
-                muteBtn.style.background = "#5f6368";
-            } else {
-                video.muted = true;
-                muteBtn.innerHTML = "صوت 🔊";
-                muteBtn.style.background = "#34a853";
-            }
+            video.muted = !video.muted;
+            muteBtn.innerHTML = video.muted ? "صوت 🔊" : "كتم 🔇";
+            muteBtn.style.background = video.muted ? "#5f6368" : "#34a853";
         });
     </script>
 </body>
