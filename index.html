@@ -3,9 +3,37 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR - Fixed Lens</title>
+    <title>Sattec AR - Final Version</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+        /* تنسيق الزر ليكون في المنتصف تماماً */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            /* هذه الخاصية هي السر في التوسط الحقيقي */
+            transform: translateX(-50%); 
+            z-index: 1000;
+            width: 80%; /* تحديد عرض لضمان التناسق */
+            max-width: 300px;
+            text-align: center;
+        }
+
+        #playBtn {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: none;
+            background: #1a73e8;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
@@ -27,36 +55,25 @@
         <a-entity camera></a-entity>
     </a-scene>
 
-    <div style="position: fixed; bottom: 30px; width: 100%; text-align: center; z-index: 1000;">
-        <button id="playBtn" style="padding: 15px 35px; border-radius: 50px; border: none; background: #1a73e8; color: white; font-weight: bold; font-size: 18px; cursor: pointer;">
-            تشغيل العرض التفاعلي ▶️
-        </button>
+    <!-- الحاوية المتوسطة للزر -->
+    <div class="controls">
+        <button id="playBtn">تشغيل العرض التفاعلي ▶️</button>
     </div>
 
     <script>
-        // كود إضافي لإجبار الكاميرا على إلغاء الزوم
-        window.addEventListener('load', function () {
-            setTimeout(() => {
-                const videoElement = document.querySelector('video');
-                if (videoElement && videoElement.srcObject) {
-                    const track = videoElement.srcObject.getVideoTracks()[0];
-                    const capabilities = track.getCapabilities();
-                    
-                    // محاولة ضبط الزوم على أقل قيمة ممكنة (1)
-                    if (capabilities.zoom) {
-                        track.applyConstraints({
-                            advanced: [{ zoom: capabilities.zoom.min || 1 }]
-                        });
-                    }
-                }
-            }, 3000); // ننتظر 3 ثوانٍ حتى تعمل الكاميرا بالكامل
-        });
-
         const btn = document.getElementById('playBtn');
         const video = document.getElementById('vid');
+        
         btn.addEventListener('click', () => {
-            if (video.paused) { video.play(); btn.innerHTML = "إيقاف مؤقت ⏸️"; btn.style.background = "#d93025"; }
-            else { video.pause(); btn.innerHTML = "تشغيل العرض التفاعلي ▶️"; btn.style.background = "#1a73e8"; }
+            if (video.paused) {
+                video.play();
+                btn.innerHTML = "إيقاف مؤقت ⏸️";
+                btn.style.background = "#d93025";
+            } else {
+                video.pause();
+                btn.innerHTML = "تشغيل العرض التفاعلي ▶️";
+                btn.style.background = "#1a73e8";
+            }
         });
     </script>
 </body>
