@@ -9,34 +9,34 @@
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         
-        /* الهوية البصرية - متوسطة تماماً */
+        /* التوسط المطلق للهوية البصرية */
         .header-brand {
             position: fixed; top: 20px; left: 0; width: 100%;
             display: flex; justify-content: center; z-index: 2000;
         }
         .header-box {
-            background: white; padding: 10px 20px; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: bold; color: #1a73e8;
+            background: white; padding: 10px 25px; border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; color: #1a73e8; font-size: 20px;
         }
 
         /* تذييل الصفحة - متوسط تماماً */
         .footer-contact {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 0, 0, 0.8); color: white;
-            padding: 15px 0; z-index: 2000; font-size: 13px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.85); color: white;
+            padding: 15px 0; text-align: center; z-index: 2000; font-size: 14px;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* حاوية الأزرار - متوسطة تماماً */
+        /* حاوية الأزرار - متوسطة بدقة */
         .ui-controls {
-            position: fixed; bottom: 90px; left: 0; width: 100%;
-            display: flex; justify-content: center; gap: 10px; z-index: 2100;
+            position: fixed; bottom: 95px; left: 0; width: 100%;
+            display: flex; justify-content: center; gap: 15px; z-index: 2100;
         }
 
         button {
-            padding: 12px 25px; border-radius: 50px; border: none;
-            color: white; font-weight: bold; cursor: pointer; font-size: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            padding: 12px 28px; border-radius: 50px; border: none;
+            color: white; font-weight: bold; cursor: pointer; font-size: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); min-width: 110px;
         }
         #playBtn { background: #1a73e8; }
         #muteBtn { background: #5f6368; }
@@ -47,8 +47,8 @@
     <div class="header-brand"><div class="header-box">SATTEC</div></div>
 
     <div class="footer-contact">
-        <div>info@sattec.com.sa</div>
-        <div style="margin-top: 4px;">الرقم الموحد: 920008934</div>
+        <div>info@sattec.com</div>
+        <div style="margin-top: 5px;">الرقم الموحد: 920000000</div>
     </div>
 
     <div class="ui-controls">
@@ -56,18 +56,19 @@
         <button id="muteBtn">كتم 🔇</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- إعدادات المشهد لضمان رندر الفيديو -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
         <a-assets>
-            <!-- أضفنا سطر الفيديو مع إعدادات التشغيل التلقائي المكتوم لضمان الظهور -->
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- استخدام الباركود الخاص بك كعلامة -->
-        <a-marker type="pattern" url="pattern-qr-code (3).patt">
-            <a-image src="#frame" position="0 0 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
-            <!-- الفيديو هنا مع رفع موقعه قليلاً للتأكد من عدم تداخله مع الإطار -->
-            <a-video src="#vid" position="0 0.1 0" rotation="-90 0 0" width="2.2" height="1.2"></a-video>
+        <!-- الربط مع الباركود المخصص لك -->
+        <a-marker type="pattern" url="pattern-qr-code (3).patt" id="mainMarker">
+            <!-- الإطار -->
+            <a-image src="#frame" position="0 0.01 0" rotation="-90 0 0" width="2.4" height="1.4"></a-image>
+            <!-- الفيديو: أضفنا shader: flat لضمان الظهور بدون تأثير الإضاءة -->
+            <a-video src="#vid" position="0 0.1 0" rotation="-90 0 0" width="2.2" height="1.2" material="shader: flat;"></a-video>
         </a-marker>
 
         <a-entity camera></a-entity>
@@ -78,7 +79,12 @@
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
 
-        // زر التشغيل/الإيقاف
+        // إصلاح مشكلة عدم ظهور الفيديو برمجياً
+        window.addEventListener('click', () => {
+            // التفاعل الأول للمستخدم يضمن تحميل الموارد
+            video.load();
+        }, { once: true });
+
         playBtn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
@@ -91,7 +97,6 @@
             }
         });
 
-        // زر كتم/تشغيل الصوت
         muteBtn.addEventListener('click', () => {
             if (video.muted) {
                 video.muted = false;
