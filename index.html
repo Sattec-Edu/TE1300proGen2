@@ -1,97 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR Pro | Riyadh</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sattec Ultimate AR</title>
+    <!-- استخدام مكتبة MindAR الأكثر ثباتاً للأجهزة الحديثة -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image.prod.js"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+    
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        
-        /* التوسط المطلق والنهائي */
-        .overlay {
+        body { margin: 0; overflow: hidden; }
+        /* نظام التوسط المطلق والنهائي */
+        .interface {
             position: fixed; left: 0; width: 100%;
             display: flex; flex-direction: column; align-items: center;
             z-index: 9999; pointer-events: none;
         }
-        .top-brand { top: 20px; }
-        .bottom-info { bottom: 0; background: rgba(0,0,0,0.9); padding: 20px 0; }
+        .header { top: 20px; }
+        .footer { bottom: 0; background: rgba(0,0,0,0.9); padding: 20px 0; color: white; text-align: center; }
         .controls { bottom: 100px; pointer-events: auto; }
-
-        .tag-center {
-            background: white; padding: 12px 35px; border-radius: 10px;
-            color: #1a73e8; font-weight: bold; font-size: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-
-        button {
-            padding: 16px 32px; border-radius: 50px; border: none;
-            background: #1a73e8; color: white; font-weight: bold;
-            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            font-size: 16px; min-width: 150px;
+        
+        .tag { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; font-size: 18px; }
+        #startBtn { 
+            padding: 20px 40px; border-radius: 50px; border: none; 
+            background: #1a73e8; color: white; font-weight: bold; 
+            font-size: 18px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay top-brand"><div class="tag-center">SATTEC</div></div>
-
-    <div class="overlay bottom-info">
-        <div style="color: white; margin-bottom: 5px;">info@sattec.com</div>
-        <div style="color: #aaa; font-size: 14px;">920000000</div>
+    <div class="interface header"><div class="tag">SATTEC</div></div>
+    
+    <div class="interface footer">
+        <div style="font-size: 14px;">info@sattec.com | 920000000</div>
     </div>
 
-    <div class="overlay controls">
-        <button id="mainBtn">تشغيل العرض 🎬</button>
+    <div class="interface controls">
+        <button id="startBtn">تشغيل العرض الآن 🎬</button>
     </div>
 
-    <!-- تم إضافة "canvasWidth/Height" لضمان عدم تشتت الكاميرا -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; canvasWidth: 640; canvasHeight: 480;">
+    <!-- إعدادات التتبع القوي -->
+    <a-scene mindar-image="imageTargetSrc: https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+        
         <a-assets>
-            <video id="v" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-            <img id="f" src="frame.png">
+            <video id="arVideo" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+            <img id="arFrame" src="frame.png">
         </a-assets>
 
-        <!-- الربط بالباترن المرفوع في image_d3d832.png -->
-        <a-marker type="pattern" url="sattec-logo.patt" id="marker">
-            <a-entity rotation="-90 0 0">
-                <a-image src="#f" width="2.4" height="1.4"></a-image>
-                <a-plane material="src: #v; shader: flat;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
-            </a-entity>
-        </a-marker>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <a-entity camera></a-entity>
+        <!-- التثبيت على الهدف -->
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-image src="#arFrame" width="1.5" height="1" position="0 0 0"></a-image>
+            <a-video src="#arVideo" width="1.4" height="0.9" position="0 0 0.01"></a-video>
+        </a-entity>
     </a-scene>
 
     <script>
-        const video = document.querySelector('#v');
-        const btn = document.querySelector('#mainBtn');
+        const btn = document.querySelector("#startBtn");
+        const video = document.querySelector("#arVideo");
 
-        // المنطق البرمجي السليم: زر واحد يقوم بكل شيء لتفادي تعليق المتصفح
-        btn.onclick = () => {
-            if (video.paused) {
-                video.muted = false; // فتح الصوت فوراً مع التشغيل
-                video.play().then(() => {
-                    btn.innerText = "كتم الصوت 🔇";
-                    btn.style.background = "#5f6368";
-                }).catch(e => alert("يرجى السماح بالكاميرا أولاً"));
-            } else {
-                video.muted = !video.muted;
-                btn.innerText = video.muted ? "فتح الصوت 🔊" : "كتم الصوت 🔇";
-            }
-        };
+        // كود تشغيل "مضاد للحظر"
+        btn.addEventListener('click', () => {
+            video.muted = false;
+            video.play();
+            btn.style.display = 'none'; // إخفاء الزر بعد التشغيل لضمان التفرغ للشاشة
+        });
 
-        // إجبار المتصفح على رسم الفريمات (حل مشكلة اختفاء الصورة)
-        function refresh() {
-            const plane = document.querySelector('a-plane');
-            if (plane && plane.getObject3D('mesh')) {
-                const mat = plane.getObject3D('mesh').material;
-                if (mat.map) mat.map.needsUpdate = true;
-            }
-            requestAnimationFrame(refresh);
+        // إجبار التحديث المستمر لمنع تجمد الصورة
+        function renderLoop() {
+            const mesh = document.querySelector('a-video').getObject3D('mesh');
+            if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
+            requestAnimationFrame(renderLoop);
         }
-        refresh();
+        renderLoop();
     </script>
 </body>
 </html>
