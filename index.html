@@ -1,80 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sattec Ultimate AR</title>
-    <!-- استخدام مكتبة MindAR الأكثر ثباتاً للأجهزة الحديثة -->
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image.prod.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sattec AR | Final Success</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
-    
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; }
-        /* نظام التوسط المطلق والنهائي */
-        .interface {
-            position: fixed; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 9999; pointer-events: none;
-        }
+        .ui { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
         .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.9); padding: 20px 0; color: white; text-align: center; }
-        .controls { bottom: 100px; pointer-events: auto; }
-        
-        .tag { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; font-size: 18px; }
-        #startBtn { 
-            padding: 20px 40px; border-radius: 50px; border: none; 
-            background: #1a73e8; color: white; font-weight: bold; 
-            font-size: 18px; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
+        .controls { bottom: 60px; pointer-events: auto; }
+        .tag { background: white; padding: 10px 25px; border-radius: 8px; color: #1a73e8; font-weight: bold; }
+        button { padding: 15px 30px; border-radius: 5px; border: none; background: #1a73e8; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
 
-<body>
-    <div class="interface header"><div class="tag">SATTEC</div></div>
-    
-    <div class="interface footer">
-        <div style="font-size: 14px;">info@sattec.com | 920000000</div>
-    </div>
+<body style="margin: 0; overflow: hidden;">
+    <div class="ui header"><div class="tag">SATTEC</div></div>
+    <div class="ui controls"><button id="go">بدء العرض الآن 🎬</button></div>
 
-    <div class="interface controls">
-        <button id="startBtn">تشغيل العرض الآن 🎬</button>
-    </div>
-
-    <!-- إعدادات التتبع القوي -->
-    <a-scene mindar-image="imageTargetSrc: https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; antialias: true;">
         <a-assets>
-            <video id="arVideo" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-            <img id="arFrame" src="frame.png">
+            <!-- إضافة autoplay و muted و playsinline بشكل قسري -->
+            <video id="videoAsset" src="screen_video.mp4" 
+                   autoplay loop="true" crossorigin="anonymous" 
+                   playsinline webkit-playsinline muted preload="auto"></video>
+            <img id="frameAsset" src="frame.png">
         </a-assets>
 
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-        <!-- التثبيت على الهدف -->
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-image src="#arFrame" width="1.5" height="1" position="0 0 0"></a-image>
-            <a-video src="#arVideo" width="1.4" height="0.9" position="0 0 0.01"></a-video>
-        </a-entity>
+        <a-marker type="pattern" url="sattec-logo.patt">
+            <a-entity rotation="-90 0 0">
+                <a-image src="#frameAsset" width="2.4" height="1.4"></a-image>
+                <!-- استخدام shader: flat ضروري جداً لتجنب الدائرة اللودينج -->
+                <a-plane id="videoPlane" material="src: #videoAsset; shader: flat; side: double; transparent: true; opacity: 1;" 
+                         width="2.2" height="1.2" position="0 0 0.05"></a-plane>
+            </a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        const btn = document.querySelector("#startBtn");
-        const video = document.querySelector("#arVideo");
+        const v = document.querySelector('#videoAsset');
+        const btn = document.querySelector('#go');
+        const plane = document.querySelector('#videoPlane');
 
-        // كود تشغيل "مضاد للحظر"
         btn.addEventListener('click', () => {
-            video.muted = false;
-            video.play();
-            btn.style.display = 'none'; // إخفاء الزر بعد التشغيل لضمان التفرغ للشاشة
+            // فك كتم الصوت وتشغيل الفيديو برمجياً
+            v.muted = false;
+            v.play();
+            btn.style.display = 'none';
+            
+            // "الوخزة البرمجية": إجبار الماتيريال على التحديث فور الضغط
+            if(plane.getObject3D('mesh')) {
+                plane.getObject3D('mesh').material.map.needsUpdate = true;
+            }
         });
 
-        // إجبار التحديث المستمر لمنع تجمد الصورة
-        function renderLoop() {
-            const mesh = document.querySelector('a-video').getObject3D('mesh');
-            if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
-            requestAnimationFrame(renderLoop);
+        // حلقة التحديث المستمر لضمان استمرار ظهور الفيديو
+        function refreshVideo() {
+            if (v.readyState >= v.HAVE_CURRENT_DATA) {
+                const mesh = plane.getObject3D('mesh');
+                if (mesh && mesh.material.map) {
+                    mesh.material.map.needsUpdate = true;
+                }
+            }
+            requestAnimationFrame(refreshVideo);
         }
-        renderLoop();
+        refreshVideo();
     </script>
 </body>
 </html>
