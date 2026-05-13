@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>SATTEC | تجربة تفاعلية</title>
     
-    <!-- مكتبة MindAR و A-Frame -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
@@ -50,7 +49,6 @@
         #playBtn { background: #1a73e8; color: white; }
         #muteBtn { background: #5f6368; color: white; }
         
-        /* مؤشر للمستخدم */
         .instruction {
             position: fixed;
             top: 50%;
@@ -79,7 +77,6 @@
     
     <div id="instruction" class="instruction">🔍 وجه الكاميرا نحو الصورة المستهدفة</div>
 
-    <!-- مشهد الواقع المعزز - باستخدام رابط يعمل -->
     <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
@@ -87,16 +84,20 @@
              device-orientation-permission-ui="enabled: false">
         
         <a-assets>
-            <img id="animation" src="screen_animation.webp" crossorigin="anonymous">
+            <!-- تأكد من أن هذه الملفات موجودة في مستودع GitHub بنفس الأسماء -->
             <img id="frameImage" src="frame.png" crossorigin="anonymous">
+            <img id="animation" src="screen_animation.webp" crossorigin="anonymous">
             <audio id="sound" src="voiceover.mp3" preload="auto"></audio>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
+            <!-- إطار الشاشة -->
             <a-image src="#frameImage" width="2.4" height="1.4" position="0 0 0"></a-image>
-            <a-plane material="src: #animation; shader: flat; transparent: true" 
+            
+            <!-- الفيديو المتحرك - تعديلات مهمة -->
+            <a-plane material="src: #animation; shader: standard; transparent: true; side: double" 
                      width="2.2" height="1.2" 
                      position="0 0 0.05"
                      rotation="-90 0 0">
@@ -105,25 +106,39 @@
     </a-scene>
 
     <script>
-        const videoAnim = document.getElementById('animation');
+        const animation = document.getElementById('animation');
         const audio = document.getElementById('sound');
         const playBtn = document.getElementById('playBtn');
         const muteBtn = document.getElementById('muteBtn');
         const instruction = document.getElementById('instruction');
-        let isPlaying = false;
         let targetFound = false;
+
+        // إجبار تحديث الصورة المتحركة
+        function refreshAnimation() {
+            if (animation && animation.complete) {
+                console.log("✅ WebP loaded");
+            } else if (animation) {
+                animation.onload = () => console.log("✅ WebP loaded");
+                animation.onerror = () => console.log("❌ WebP failed to load");
+            }
+        }
+        refreshAnimation();
 
         // مراقبة اكتشاف الهدف
         const targetEntity = document.getElementById('ar-target');
-        
         if (targetEntity) {
             targetEntity.addEventListener('targetFound', () => {
                 targetFound = true;
                 instruction.style.display = 'none';
                 console.log("✅ تم اكتشاف الهدف!");
-                // تشغيل الصوت تلقائياً عند اكتشاف الهدف (إذا لم يكن مكتوماً)
-                if (audio.muted === false) {
+                if (!audio.muted) {
                     audio.play().catch(e => console.log("تفاعل المستخدم مطلوب للصوت"));
+                }
+                // إعادة تحميل الصورة المتحركة
+                if (animation) {
+                    animation.style.animation = 'none';
+                    animation.offsetHeight;
+                    animation.style.animation = null;
                 }
             });
             
@@ -134,30 +149,23 @@
             });
         }
 
-        // تشغيل/إيقاف الصورة المتحركة
         playBtn.addEventListener('click', () => {
-            if (!isPlaying) {
-                isPlaying = true;
-                playBtn.innerHTML = "⏸️ إيقاف";
-                playBtn.style.background = "#d93025";
-                // إعادة تحميل الصورة المتحركة
-                videoAnim.style.animation = 'none';
-                videoAnim.offsetHeight;
-                videoAnim.style.animation = null;
-            } else {
-                isPlaying = false;
-                playBtn.innerHTML = "▶️ تشغيل";
-                playBtn.style.background = "#1a73e8";
+            if (animation) {
+                animation.style.animation = 'none';
+                animation.offsetHeight;
+                animation.style.animation = null;
+                playBtn.innerHTML = "🔄 إعادة تشغيل";
+                setTimeout(() => {
+                    playBtn.innerHTML = "▶️ تشغيل";
+                }, 2000);
             }
         });
 
-        // كتم/تشغيل الصوت
         muteBtn.addEventListener('click', () => {
             if (audio.muted) {
                 audio.muted = false;
                 muteBtn.innerHTML = "🔇 كتم";
                 muteBtn.style.background = "#5f6368";
-                // محاولة تشغيل الصوت
                 audio.play().catch(e => console.log("اضغط على الشاشة أولاً"));
             } else {
                 audio.muted = true;
@@ -167,14 +175,12 @@
             }
         });
 
-        // تفعيل الصوت عند أول نقرة على الشاشة (تجاوز سياسة المتصفح)
         document.body.addEventListener('click', () => {
-            if (audio.muted === false && targetFound) {
+            if (!audio.muted && targetFound) {
                 audio.play().catch(e => console.log(""));
             }
         });
         
-        // اختفاء رسالة التعليمات بعد 5 ثوانٍ
         setTimeout(() => {
             if (!targetFound) {
                 instruction.style.opacity = '0.7';
@@ -182,6 +188,7 @@
         }, 5000);
         
         console.log("✅ المشروع جاهز - انتظر اكتشاف الهدف");
+        console.log("ملف WebP:", animation ? animation.src : "غير موجود");
     </script>
 </body>
 </html>
