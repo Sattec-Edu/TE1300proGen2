@@ -3,39 +3,43 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec Pro AR</title>
+    <title>Sattec Direct AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        /* التوسط المطلق للهوية */
-        .ui-fixed { position: fixed; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 2000; pointer-events: none; }
+        /* نظام التوسط المطلق للهوية والأزرار */
+        .centered-ui {
+            position: fixed; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 2000; pointer-events: none;
+        }
         .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 15px 0; color: white; }
-        .controls { bottom: 95px; pointer-events: auto; }
-        .box { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        button { padding: 15px 30px; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; margin: 0 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 20px 0; color: white; }
+        .controls { bottom: 100px; pointer-events: auto; }
+        .tag { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; }
+        button { padding: 15px 35px; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 
 <body>
-    <div class="ui-fixed header"><div class="box">SATTEC</div></div>
-    <div class="ui-fixed footer"><div>info@sattec.com | 920000000</div></div>
+    <div class="centered-ui header"><div class="tag">SATTEC</div></div>
+    <div class="centered-ui footer"><div>info@sattec.com.sa | 920008934</div></div>
     
-    <div class="ui-fixed controls">
-        <button id="startBtn" style="background: #1a73e8;">ابدأ التجربة 🚀</button>
+    <div class="centered-ui controls">
+        <!-- زر واحد فقط يظهر للعميل لفتح الصوت -->
+        <button id="unmuteBtn" style="background: #1a73e8;">🔊 تشغيل الصوت</button>
     </div>
 
-    <!-- إعدادات التتبع الممتد لضمان عدم اختفاء الشاشة -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best; maxDetectionRate: 60; canvasWidth: 1280; canvasHeight: 720;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="frame" src="frame.png">
         </a-assets>
 
-        <!-- استخدام المعرف المرفوع في مستودعك zsuliman/ar_screen -->
+        <!-- المعرف الهجين (S + QR) -->
         <a-marker type="pattern" url="sattec-logo.patt" id="mainMarker">
-            <a-entity id="content" rotation="-90 0 0" visible="false">
+            <a-entity rotation="-90 0 0">
                 <a-image src="#frame" width="2.4" height="1.4" position="0 0 0.01"></a-image>
                 <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.04"></a-plane>
             </a-entity>
@@ -44,36 +48,29 @@
     </a-scene>
 
     <script>
-        const video = document.getElementById('vid');
-        const content = document.getElementById('content');
+        const v = document.getElementById('vid');
+        const btn = document.getElementById('unmuteBtn');
         const marker = document.getElementById('mainMarker');
-        const startBtn = document.getElementById('startBtn');
 
-        // بمجرد ضغط "ابدأ"، الفيديو يجهز في الخلفية
-        startBtn.onclick = () => {
-            video.play();
-            video.pause();
-            startBtn.style.display = 'none';
-            alert("وجه الكاميرا للباركود لمرة واحدة فقط");
-        };
-
-        // المنطق الجديد: بمجرد رؤية الباركود، الشاشة تظهر وتبقى "للأبد"
+        // بمجرد رصد الباركود الهجين، يبدأ الفيديو فوراً صامتاً (تجاوز حظر المتصفح)
         marker.addEventListener('markerFound', () => {
-            content.setAttribute('visible', 'true');
-            video.play();
-            video.muted = false;
-            // تثبيت المحتوى في الفضاء حتى لو ضاع الباركود
-            marker.setAttribute('emitevents', 'false'); 
+            v.play(); 
         });
 
-        function sync() {
-            if (!video.paused) {
+        // العميل يضغط فقط ليسمع الصوت
+        btn.onclick = () => {
+            v.muted = false;
+            btn.style.display = 'none'; // تختفي الأزرار ويبقى الفيديو
+        };
+
+        function update() {
+            if (!v.paused) {
                 const mesh = document.querySelector('a-plane').getObject3D('mesh');
                 if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
             }
-            requestAnimationFrame(sync);
+            requestAnimationFrame(update);
         }
-        sync();
+        update();
     </script>
 </body>
 </html>
