@@ -3,75 +3,95 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec AR System</title>
-    <!-- استخدام روابط CDN مستقرة جداً -->
+    <title>Sattec AR Pro | Riyadh</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        /* التوسط المطلق للأزرار والهوية */
-        .ui-fixed { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
-        .header { top: 20px; }
-        .controls { bottom: 50px; pointer-events: auto; gap: 10px; }
-        .label { background: white; padding: 10px 20px; border-radius: 8px; color: #1a73e8; font-weight: bold; }
-        button { padding: 15px 25px; border-radius: 5px; border: none; background: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        /* التوسط المطلق والنهائي */
+        .overlay {
+            position: fixed; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            z-index: 9999; pointer-events: none;
+        }
+        .top-brand { top: 20px; }
+        .bottom-info { bottom: 0; background: rgba(0,0,0,0.9); padding: 20px 0; }
+        .controls { bottom: 100px; pointer-events: auto; }
+
+        .tag-center {
+            background: white; padding: 12px 35px; border-radius: 10px;
+            color: #1a73e8; font-weight: bold; font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        button {
+            padding: 16px 32px; border-radius: 50px; border: none;
+            background: #1a73e8; color: white; font-weight: bold;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            font-size: 16px; min-width: 150px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="ui-fixed header"><div class="label">SATTEC</div></div>
-    
-    <div class="ui-fixed controls">
-        <button id="btnPlay">تشغيل الفيديو ▶️</button>
-        <button id="btnMute">كتم/فتح الصوت 🔊</button>
+    <div class="overlay top-brand"><div class="tag-center">SATTEC</div></div>
+
+    <div class="overlay bottom-info">
+        <div style="color: white; margin-bottom: 5px;">info@sattec.com</div>
+        <div style="color: #aaa; font-size: 14px;">920000000</div>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <div class="overlay controls">
+        <button id="mainBtn">تشغيل العرض 🎬</button>
+    </div>
+
+    <!-- تم إضافة "canvasWidth/Height" لضمان عدم تشتت الكاميرا -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; canvasWidth: 640; canvasHeight: 480;">
         <a-assets>
-            <!-- الملفات من المستودع الموضح في image_d3d832.png -->
-            <video id="v" src="screen_video.mp4" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+            <video id="v" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
             <img id="f" src="frame.png">
         </a-assets>
 
-        <!-- الربط بالباترن sattec-logo.patt الموضح في image_d3d832.png -->
-        <a-marker type="pattern" url="sattec-logo.patt">
+        <!-- الربط بالباترن المرفوع في image_d3d832.png -->
+        <a-marker type="pattern" url="sattec-logo.patt" id="marker">
             <a-entity rotation="-90 0 0">
                 <a-image src="#f" width="2.4" height="1.4"></a-image>
                 <a-plane material="src: #v; shader: flat;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
             </a-entity>
         </a-marker>
+
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
         const video = document.querySelector('#v');
-        const bPlay = document.querySelector('#btnPlay');
-        const bMute = document.querySelector('#btnMute');
+        const btn = document.querySelector('#mainBtn');
 
-        // أهم وظيفة: تفاعل المستخدم الصريح لفك حظر الفيديو والصوت
-        bPlay.addEventListener('click', () => {
+        // المنطق البرمجي السليم: زر واحد يقوم بكل شيء لتفادي تعليق المتصفح
+        btn.onclick = () => {
             if (video.paused) {
+                video.muted = false; // فتح الصوت فوراً مع التشغيل
                 video.play().then(() => {
-                    bPlay.innerText = "إيقاف مؤقت ⏸️";
-                }).catch(err => console.error("Error:", err));
+                    btn.innerText = "كتم الصوت 🔇";
+                    btn.style.background = "#5f6368";
+                }).catch(e => alert("يرجى السماح بالكاميرا أولاً"));
             } else {
-                video.pause();
-                bPlay.innerText = "تشغيل الفيديو ▶️";
+                video.muted = !video.muted;
+                btn.innerText = video.muted ? "فتح الصوت 🔊" : "كتم الصوت 🔇";
             }
-        });
+        };
 
-        bMute.addEventListener('click', () => {
-            video.muted = !video.muted;
-            bMute.innerText = video.muted ? "فتح الصوت 🔊" : "كتم الصوت 🔇";
-        });
-
-        // إجبار التحديث المستمر للصورة (Fix لصوت بدون صورة)
-        function render() {
-            const mesh = document.querySelector('a-plane').getObject3D('mesh');
-            if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
-            requestAnimationFrame(render);
+        // إجبار المتصفح على رسم الفريمات (حل مشكلة اختفاء الصورة)
+        function refresh() {
+            const plane = document.querySelector('a-plane');
+            if (plane && plane.getObject3D('mesh')) {
+                const mat = plane.getObject3D('mesh').material;
+                if (mat.map) mat.map.needsUpdate = true;
+            }
+            requestAnimationFrame(refresh);
         }
-        render();
+        refresh();
     </script>
 </body>
 </html>
