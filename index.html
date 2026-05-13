@@ -1,61 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ar_screen | SATTEC Experience</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        .ui { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
-        .header { top: 20px; }
-        .controls { bottom: 80px; pointer-events: auto; }
-        .tag { background: white; padding: 10px 25px; border-radius: 8px; color: #1a73e8; font-weight: bold; }
-        button { padding: 15px 40px; border-radius: 50px; border: none; background: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* زر تفعيل الصوت - يظهر في المنتصف أولاً */
+        .activate-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb4d);
+            background-size: 200% 200%;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: transform 0.2s, opacity 0.3s;
+            font-family: inherit;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .activate-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .activate-btn.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* توجيه المستخدم */
+        .instruction {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            text-align: center;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        /* شعار SATTEC يظهر في منتصف الشاشة قبل تفعيل الكاميرا */
+        .brand-center {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 999;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .brand-center img {
+            max-width: 200px;
+            width: 80%;
+        }
+
+        .brand-center.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* شعار ثابت في الزاوية (اختياري) */
+        .corner-brand {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            z-index: 1000;
+            opacity: 0.7;
+            font-size: 12px;
+            color: white;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .activate-btn { padding: 10px 24px; font-size: 16px; bottom: 20px; }
+            .instruction { font-size: 11px; white-space: normal; text-align: center; width: 90%; top: 10px; }
+        }
     </style>
 </head>
 <body>
-    <div class="ui header"><div class="tag">SATTEC</div></div>
-    <div class="ui controls"><button id="btn">بدء التجربة الآن 🚀</button></div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+    <!-- شاشة الترحيب المركزية -->
+    <div class="brand-center" id="brandCenter">
+        <!-- يمكنك وضع صورة شعار SATTEC هنا، حالياً نص بديل -->
+        <div style="background: rgba(0,0,0,0.8); padding: 20px 30px; border-radius: 20px; backdrop-filter: blur(10px);">
+            <h1 style="color: #fdbb4d; margin-bottom: 10px;">SATTEC</h1>
+            <p style="color: white;">تجربة الواقع المعزز</p>
+            <p style="color: #aaa; font-size: 12px; margin-top: 15px;">وجه الكاميرا نحو الباركود الرقمي (5)</p>
+        </div>
+    </div>
+
+    <!-- زر تفعيل الصوت والتجربة -->
+    <button class="activate-btn" id="activateBtn">🔊 تفعيل التجربة</button>
+
+    <!-- توجيه بسيط -->
+    <div class="instruction" id="instructionText">🎯 امسح الباركود الرقمي (المربع الأسود رقم 5)</div>
+
+    <!-- شعار زاوية -->
+    <div class="corner-brand">SATTEC AR</div>
+
+    <!-- مشهد AR.js - تم تكوينه لثبات تام -->
+    <a-scene 
+        id="arScene"
+        embedded 
+        arjs="sourceType: webcam; 
+               detectionMode: mono_and_matrix; 
+               matrixCodeType: 3x3;
+               debugUIEnabled: false;
+               cameraParametersUrl: false;"
+        vr-mode-ui="enabled: false"
+        renderer="antialias: true; alpha: false"
+        gesture-detector
+    >
         <a-assets>
-            <!-- تأكد من رفع هذه الملفات بنفس الأسماء في GitHub -->
-            <img id="ani" src="screen_animation.webp">
-            <audio id="snd" src="voiceover.mp3" preload="auto"></audio>
-            <img id="frm" src="frame.png">
+            <!-- الفيديو المتحرك بصيغة WebP -->
+            <img id="animation" src="screen_animation.webp" crossorigin="anonymous">
+            <!-- الملف الصوتي -->
+            <audio id="voiceAudio" src="voiceover.mp3" preload="auto"></audio>
         </a-assets>
 
-        <!-- استخدام الرابط الكامل للملف لضمان التحميل -->
-        <a-marker type="pattern" url="https://zsuliman.github.io/ar_screen/sattec-logo.patt" id="mainMarker">
-            <a-entity rotation="-90 0 0">
-                <a-image src="#frm" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <a-plane material="src: #ani; shader: flat; transparent: true;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
-            </a-entity>
+        <!-- 
+            الماركر الرقمي: المعرف "5" هو مصفوفة 3x3
+            خاصية smooth تمنع الاهتزاز تماماً
+        -->
+        <a-marker 
+            type="barcode" 
+            value="5" 
+            smooth="true" 
+            smoothCount="12" 
+            smoothTolerance="0.008"
+            emitEvents="true"
+        >
+            <!-- 
+                المستوى التفاعلي: فيديو + معلومات الشركة
+                يتمركز دائماً في منتصف الماركر
+            -->
+            <a-plane 
+                material="src: #animation; shader: flat; side: double"
+                width="2.2" 
+                height="1.2" 
+                rotation="-90 0 0"
+                position="0 0 0"
+            ></a-plane>
+
+            <!-- شعار SATTEC فوق الفيديو (اختياري، يظهر داخل التجربة) -->
+            <a-text 
+                value="SATTEC" 
+                color="#fdbb4d" 
+                align="center"
+                width="3"
+                position="0 0.8 0.01"
+                scale="0.5 0.5 0.5"
+                rotation="-90 0 0"
+            ></a-text>
+            
+            <!-- نص ثانوي -->
+            <a-text 
+                value="حلول ذكية" 
+                color="#ffffff" 
+                align="center"
+                width="2"
+                position="0 -0.9 0.01"
+                scale="0.3 0.3 0.3"
+                rotation="-90 0 0"
+            ></a-text>
         </a-marker>
-        <a-entity camera></a-entity>
+
+        <!-- كاميرا بسيطة مع إعدادات ثبات -->
+        <a-entity camera position="0 0 0" look-controls="enabled: false"></a-entity>
     </a-scene>
 
     <script>
-        const marker = document.querySelector('#mainMarker');
-        const audio = document.querySelector('#snd');
-        const btn = document.querySelector('#btn');
+        (function() {
+            const activateBtn = document.getElementById('activateBtn');
+            const brandCenter = document.getElementById('brandCenter');
+            const audioElement = document.getElementById('voiceAudio');
+            const scene = document.getElementById('arScene');
+            
+            let audioAllowed = false;
+            let markerDetected = false;
 
-        btn.onclick = () => {
-            btn.style.display = 'none';
-            // إجبار المتصفح على منح الإذن للصوت
-            audio.play().then(() => { audio.pause(); audio.currentTime = 0; });
-        };
+            // وظيفة تفعيل الصوت (لا يمكن تفعيله إلا بتفاعل المستخدم)
+            function enableAudioAndStart() {
+                if (audioAllowed) return;
 
-        // فحص تقني: هل الكاميرا ترى الباركود؟
-        marker.addEventListener('markerFound', () => {
-            console.log("Marker S Found!");
-            audio.play();
-        });
+                // محاولة تشغيل الصوت (سيتم منعه لكننا نحاول لحساب الإذن)
+                audioElement.play().then(() => {
+                    audioElement.pause();
+                    audioElement.currentTime = 0;
+                    audioAllowed = true;
+                    console.log("✅ الصوت مفعل");
+                }).catch(e => {
+                    console.log("لا يزال الصوت بحاجة إلى إذن", e);
+                    // في بعض المتصفحات تحتاج إلى إعادة المحاولة
+                    audioAllowed = true; // نعتبر أن الضغطة أعطت الإذن
+                });
+                
+                // إخفاء شاشة الترحيب والزر (مع تأثير)
+                brandCenter.classList.add('hide');
+                activateBtn.classList.add('hide');
+                
+                // رسالة تأكيد قصيرة
+                const instr = document.getElementById('instructionText');
+                instr.innerHTML = "🎬 جاهز! وجه الكاميرا نحو المربع الأسود رقم 5";
+                setTimeout(() => {
+                    if(instr) instr.style.opacity = "0.7";
+                }, 3000);
+            }
 
-        marker.addEventListener('markerLost', () => {
-            audio.pause();
-        });
+            // عند الضغط على الزر - هذه هي آلية منح الإذن للمتصفح
+            activateBtn.addEventListener('click', () => {
+                enableAudioAndStart();
+                
+                // بعض المتصفحات تحتاج إلى بدء سياق الصوت
+                if (audioElement && audioElement.play) {
+                    // نعطي إشارة للمتصفح أن المستخدم وافق
+                    audioElement.load();
+                }
+            });
+
+            // استماع للماركر عندما يصبح مرئياً - لتشغيل الصوت تلقائياً (إذا أذن المستخدم)
+            const marker = document.querySelector('a-marker');
+            if (marker) {
+                marker.addEventListener('markerFound', () => {
+                    if (!markerDetected) {
+                        markerDetected = true;
+                        console.log("🎯 تم اكتشاف الباركود 5");
+                        // تغيير النص الإرشادي
+                        const instr = document.getElementById('instructionText');
+                        if(instr) instr.innerHTML = "✅ تم التعرف على الباركود - جارٍ التشغيل";
+                        
+                        // تشغيل الصوت ولكن فقط إذا كان الإذن موجوداً (المستخدم ضغط قبلها)
+                        if (audioAllowed && audioElement) {
+                            // إعادة تشغيل الصوت من البداية
+                            audioElement.currentTime = 0;
+                            audioElement.play().catch(e => console.log("الصوت: يحتاج تفاعل أول", e));
+                        } else {
+                            // إذا لم يضغط المستخدم على الزر بعد، نذكره
+                            if(activateBtn && !activateBtn.classList.contains('hide')) {
+                                const instr2 = document.getElementById('instructionText');
+                                if(instr2) instr2.innerHTML = "⚠️ اضغط زر التفعيل أولاً لتشغيل الصوت";
+                            }
+                        }
+                    }
+                });
+                
+                marker.addEventListener('markerLost', () => {
+                    markerDetected = false;
+                    console.log("🔍 تم فقد الباركود");
+                    const instr = document.getElementById('instructionText');
+                    if(instr) instr.innerHTML = "🔍 ابحث عن المربع الأسود رقم 5";
+                });
+            }
+
+            // تأكد من أن الكاميرا تبدأ فقط بعد تفاعل المستخدم في بعض المتصفحات
+            // لا حاجة لفعل شيء إضافي، AR.js يتعامل مع الكاميرا.
+            
+            console.log("AR Screen جاهز - يستخدم الباركود الرقمي 5 (ثبات تام)");
+        })();
     </script>
+
+    <!-- مكتبات AR.js و A-Frame مع إصدارات مستقرة -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.0/dist/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-arjs@2.4.0/dist/aframe-ar.min.js"></script>
 </body>
 </html>
