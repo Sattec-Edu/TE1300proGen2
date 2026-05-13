@@ -3,71 +3,53 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec Smart AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        /* نظام التمركز المطلق للهوية */
-        .ui-center {
-            position: fixed; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 9999; pointer-events: none;
-        }
+        body { margin: 0; overflow: hidden; }
+        .ui { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 9999; pointer-events: none; }
         .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 15px 0; color: white; }
-        .tag { background: white; padding: 10px 25px; border-radius: 8px; color: #1a73e8; font-weight: bold; }
-        /* زر تفعيل الصوت ضروري بسبب سياسات المتصفح */
         .controls { bottom: 80px; pointer-events: auto; }
-        button { padding: 15px 30px; border-radius: 50px; border: none; background: #1a73e8; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .tag { background: white; padding: 10px 25px; border-radius: 8px; color: #1a73e8; font-weight: bold; }
+        button { padding: 15px 40px; border-radius: 50px; border: none; background: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-
 <body>
-    <div class="ui-center header"><div class="tag">SATTEC</div></div>
-    <div class="ui-center footer"><div>info@sattec.com | 920000000</div></div>
-    
-    <div class="ui-center controls">
-        <button id="enableBtn">تفعيل التجربة 🚀</button>
-    </div>
+    <div class="ui header"><div class="tag">SATTEC</div></div>
+    <div class="ui controls"><button id="btn">بدء التجربة الآن 🚀</button></div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
         <a-assets>
-            <!-- الملفات التي جهزتها -->
-            <img id="aniSource" src="screen_animation.webp">
-            <audio id="audioSource" src="voiceover.mp3" preload="auto"></audio>
-            <img id="frameImg" src="frame.png">
+            <!-- تأكد من رفع هذه الملفات بنفس الأسماء في GitHub -->
+            <img id="ani" src="screen_animation.webp">
+            <audio id="snd" src="voiceover.mp3" preload="auto"></audio>
+            <img id="frm" src="frame.png">
         </a-assets>
 
-        <!-- المعرف الهجين S + QR من الصورة image_54a73f.png -->
-        <a-marker type="pattern" url="sattec-logo.patt" id="marker">
+        <!-- استخدام الرابط الكامل للملف لضمان التحميل -->
+        <a-marker type="pattern" url="https://zsuliman.github.io/ar_screen/sattec-logo.patt" id="mainMarker">
             <a-entity rotation="-90 0 0">
-                <a-image src="#frameImg" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <!-- الـ WebP يظهر هنا كصورة ثابتة ومستقرة -->
-                <a-plane material="src: #aniSource; shader: flat; transparent: true;" 
-                         width="2.2" height="1.2" position="0 0 0.05"></a-plane>
+                <a-image src="#frm" width="2.4" height="1.4" position="0 0 0.01"></a-image>
+                <a-plane material="src: #ani; shader: flat; transparent: true;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
             </a-entity>
         </a-marker>
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-        const marker = document.querySelector('#marker');
-        const audio = document.querySelector('#audioSource');
-        const btn = document.querySelector('#enableBtn');
+        const marker = document.querySelector('#mainMarker');
+        const audio = document.querySelector('#snd');
+        const btn = document.querySelector('#btn');
 
-        // لا يمكن تشغيل الصوت إلا بتفاعل المستخدم
         btn.onclick = () => {
             btn.style.display = 'none';
-            // "وخزة" للصوت ليكون جاهزاً للعمل فور رصد الباركود
-            audio.play();
-            audio.pause();
-            audio.currentTime = 0;
-            alert("جاهز! وجه الكاميرا الآن للباركود");
+            // إجبار المتصفح على منح الإذن للصوت
+            audio.play().then(() => { audio.pause(); audio.currentTime = 0; });
         };
 
-        // الربط الذكي: الصوت يعمل فقط عند رؤية الباركود
+        // فحص تقني: هل الكاميرا ترى الباركود؟
         marker.addEventListener('markerFound', () => {
+            console.log("Marker S Found!");
             audio.play();
         });
 
