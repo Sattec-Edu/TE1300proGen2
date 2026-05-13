@@ -3,45 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sattec Direct AR</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        /* نظام التوسط المطلق للهوية والأزرار */
-        .centered-ui {
-            position: fixed; left: 0; width: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 2000; pointer-events: none;
-        }
-        .header { top: 20px; }
-        .footer { bottom: 0; background: rgba(0,0,0,0.85); padding: 20px 0; color: white; }
-        .controls { bottom: 100px; pointer-events: auto; }
-        .tag { background: white; padding: 10px 30px; border-radius: 12px; color: #1a73e8; font-weight: bold; }
-        button { padding: 15px 35px; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        /* التوسط المطلق كما طلبت لعلامة Sattec */
+        .flex-ui { position: fixed; left: 0; width: 100%; display: flex; justify-content: center; z-index: 2000; pointer-events: none; }
+        .top-ui { top: 20px; }
+        .bottom-ui { bottom: 0; background: rgba(0,0,0,0.8); padding: 15px 0; flex-direction: column; align-items: center; }
+        .controls { bottom: 90px; pointer-events: auto; }
+        .label { background: white; padding: 10px 25px; border-radius: 10px; color: #1a73e8; font-weight: bold; }
+        button { padding: 12px 30px; border-radius: 50px; border: none; color: white; font-weight: bold; cursor: pointer; margin: 0 5px; }
     </style>
 </head>
-
-<body>
-    <div class="centered-ui header"><div class="tag">SATTEC</div></div>
-    <div class="centered-ui footer"><div>info@sattec.com.sa | 920008934</div></div>
-    
-    <div class="centered-ui controls">
-        <!-- زر واحد فقط يظهر للعميل لفتح الصوت -->
-        <button id="unmuteBtn" style="background: #1a73e8;">🔊 تشغيل الصوت</button>
+<body style="margin: 0; overflow: hidden;">
+    <div class="flex-ui top-ui"><div class="label">SATTEC</div></div>
+    <div class="flex-ui bottom-ui"><div>info@sattec.com | 920000000</div></div>
+    <div class="flex-ui controls">
+        <button id="pBtn" style="background: #1a73e8;">تشغيل ▶️</button>
+        <button id="mBtn" style="background: #5f6368;">صوت 🔊</button>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <!-- إعدادات الكاميرا: تقليل دقة الكشف لزيادة سرعة الاستجابة -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;">
         <a-assets>
             <video id="vid" src="screen_video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-            <img id="frame" src="frame.png">
+            <img id="frm" src="frame.png">
         </a-assets>
 
-        <!-- المعرف الهجين (S + QR) -->
-        <a-marker type="pattern" url="sattec-logo.patt" id="mainMarker">
+        <!-- استخدام الباترن sattec-logo.patt المرفوع في مستودعك -->
+        <a-marker type="pattern" url="sattec-logo.patt" id="marker">
             <a-entity rotation="-90 0 0">
-                <a-image src="#frame" width="2.4" height="1.4" position="0 0 0.01"></a-image>
-                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.04"></a-plane>
+                <a-image src="#frm" width="2.4" height="1.4"></a-image>
+                <a-plane material="src: #vid; shader: flat;" width="2.2" height="1.2" position="0 0 0.05"></a-plane>
             </a-entity>
         </a-marker>
         <a-entity camera></a-entity>
@@ -49,28 +42,17 @@
 
     <script>
         const v = document.getElementById('vid');
-        const btn = document.getElementById('unmuteBtn');
-        const marker = document.getElementById('mainMarker');
+        const m = document.getElementById('marker');
+        
+        // إذا الكاميرا رأت الـ S، سيظهر تنبيه في الكونسول ويبدأ الفيديو صامتاً
+        m.addEventListener('markerFound', () => { v.play(); });
 
-        // بمجرد رصد الباركود الهجين، يبدأ الفيديو فوراً صامتاً (تجاوز حظر المتصفح)
-        marker.addEventListener('markerFound', () => {
-            v.play(); 
-        });
+        document.getElementById('pBtn').onclick = () => { v.paused ? v.play() : v.pause(); };
+        document.getElementById('mBtn').onclick = () => { v.muted = !v.muted; };
 
-        // العميل يضغط فقط ليسمع الصوت
-        btn.onclick = () => {
-            v.muted = false;
-            btn.style.display = 'none'; // تختفي الأزرار ويبقى الفيديو
-        };
-
-        function update() {
-            if (!v.paused) {
-                const mesh = document.querySelector('a-plane').getObject3D('mesh');
-                if (mesh && mesh.material.map) mesh.material.map.needsUpdate = true;
-            }
-            requestAnimationFrame(update);
-        }
-        update();
+        // إجبار التحديث اليدوي (حل مشكلة "صوت بدون صورة")
+        function loop() { if(!v.paused){ const p=document.querySelector('a-plane').getObject3D('mesh'); if(p&&p.material.map)p.material.map.needsUpdate=true; } requestAnimationFrame(loop); }
+        loop();
     </script>
 </body>
 </html>
