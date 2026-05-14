@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>SATTEC | العرض التفاعلي</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
             background: #000000;
@@ -21,7 +16,6 @@
             justify-content: center;
             padding: 20px;
         }
-        
         .container {
             max-width: 500px;
             width: 100%;
@@ -32,13 +26,18 @@
             text-align: center;
             direction: rtl;
         }
-        
+        .brand {
+            background: #1a73e8;
+            color: white;
+            padding: 15px;
+            font-size: 22px;
+            font-weight: bold;
+        }
         .screen-frame {
             width: 100%;
             background: #000;
             padding: 20px;
         }
-        
         .screen-frame img {
             width: 100%;
             max-width: 400px;
@@ -47,12 +46,10 @@
             margin: 0 auto;
             border-radius: 15px;
         }
-        
         .video-container {
             background: #000;
             padding: 0 20px 20px 20px;
         }
-        
         video {
             width: 100%;
             max-width: 400px;
@@ -61,14 +58,12 @@
             margin: 0 auto;
             background: #000;
         }
-        
         .buttons {
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-        
         button {
             padding: 14px 20px;
             font-size: 16px;
@@ -79,39 +74,11 @@
             transition: 0.3s;
             font-family: inherit;
         }
-        
-        .btn-play {
-            background: #1a73e8;
-            color: white;
-        }
-        
-        .btn-mute {
-            background: #5f6368;
-            color: white;
-        }
-        
-        .btn-pdf {
-            background: #34a853;
-            color: white;
-        }
-        
-        .btn-whatsapp {
-            background: #25d366;
-            color: white;
-        }
-        
-        button:active {
-            transform: scale(0.97);
-        }
-        
-        .brand {
-            background: #1a73e8;
-            color: white;
-            padding: 15px;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        
+        .btn-play { background: #1a73e8; color: white; }
+        .btn-mute { background: #5f6368; color: white; }
+        .btn-pdf { background: #34a853; color: white; }
+        .btn-whatsapp { background: #25d366; color: white; }
+        button:active { transform: scale(0.97); }
         .contact {
             background: #f8f9fa;
             padding: 15px;
@@ -124,10 +91,7 @@
 <body>
 
 <div class="container">
-    
-    <div class="brand">
-        SATTEC
-    </div>
+    <div class="brand">SATTEC</div>
     
     <div class="screen-frame">
         <img src="frame.png" alt="إطار الشاشة">
@@ -143,7 +107,7 @@
         <button id="playPauseBtn" class="btn-play">▶️ تشغيل الفيديو</button>
         <button id="muteBtn" class="btn-mute">🔊 كتم الصوت</button>
         <button id="pdfBtn" class="btn-pdf">📄 تحميل المواصفات التقنية (PDF)</button>
-        <button id="whatsappBtn" class="btn-whatsapp">📞 تواصل مع المبيعات عبر واتساب</button>
+        <button id="whatsappBtn" class="btn-whatsapp">📞 تواصل مع المبيعات</button>
     </div>
     
     <div class="contact">
@@ -157,10 +121,8 @@
     const muteBtn = document.getElementById('muteBtn');
     const pdfBtn = document.getElementById('pdfBtn');
     const whatsappBtn = document.getElementById('whatsappBtn');
-    
     let isPlaying = false;
     
-    // زر تشغيل / إيقاف الفيديو
     playPauseBtn.addEventListener('click', () => {
         if (isPlaying) {
             video.pause();
@@ -174,7 +136,6 @@
         isPlaying = !isPlaying;
     });
     
-    // زر كتم / تشغيل الصوت
     muteBtn.addEventListener('click', () => {
         if (video.muted) {
             video.muted = false;
@@ -187,17 +148,14 @@
         }
     });
     
-    // رابط تحميل PDF (تم التعديل برابطك الحقيقي)
     pdfBtn.addEventListener('click', () => {
         window.open('https://drive.google.com/uc?export=download&id=1JTGLbFJGl6ufil4V8fuHp3Cv9lNJR0Ix', '_blank');
     });
     
-    // رابط واتساب (تم التعديل برقمك)
     whatsappBtn.addEventListener('click', () => {
         window.open('https://wa.me/966509818728?text=أهلاً%20أود%20الاستفسار%20عن%20الشاشات%20التفاعلية', '_blank');
     });
     
-    // محاولة تشغيل الفيديو تلقائياً بصوت مكتوم
     video.muted = true;
     video.play().catch(e => console.log('انتظر تفاعل المستخدم'));
 </script>
