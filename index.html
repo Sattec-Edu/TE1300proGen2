@@ -6,64 +6,84 @@
     <title>SATTEC | العرض التفاعلي</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+        
         .container {
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             background: white;
-            border-radius: 30px;
+            border-radius: 40px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
             direction: rtl;
         }
+        
         .brand {
             background: #1a73e8;
             color: white;
-            padding: 15px;
-            font-size: 22px;
+            padding: 18px;
+            font-size: 24px;
             font-weight: bold;
+            text-align: center;
         }
-        .screen-frame {
+        
+        /* حاوية الشاشة (الإطار + الفيديو فوقه) */
+        .screen-wrapper {
+            position: relative;
             width: 100%;
             background: #000;
             padding: 20px;
         }
-        .screen-frame img {
+        
+        /* صورة الإطار (الخلفية) */
+        .frame-bg {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             height: auto;
             display: block;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* الفيديو موضوع فوق الإطار */
+        .video-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            max-width: 380px;
             border-radius: 15px;
-        }
-        .video-container {
+            overflow: hidden;
             background: #000;
-            padding: 0 20px 20px 20px;
+            z-index: 2;
         }
+        
         video {
             width: 100%;
-            max-width: 400px;
-            border-radius: 15px;
             display: block;
-            margin: 0 auto;
-            background: #000;
+            border-radius: 12px;
         }
+        
+        /* الأزرار */
         .buttons {
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            background: #f8f9fa;
         }
+        
         button {
             padding: 14px 20px;
             font-size: 16px;
@@ -74,17 +94,21 @@
             transition: 0.3s;
             font-family: inherit;
         }
+        
         .btn-play { background: #1a73e8; color: white; }
         .btn-mute { background: #5f6368; color: white; }
         .btn-pdf { background: #34a853; color: white; }
         .btn-whatsapp { background: #25d366; color: white; }
+        
         button:active { transform: scale(0.97); }
+        
         .contact {
-            background: #f8f9fa;
+            background: white;
             padding: 15px;
             font-size: 13px;
-            color: #333;
-            border-top: 1px solid #ddd;
+            color: #555;
+            text-align: center;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
@@ -93,14 +117,14 @@
 <div class="container">
     <div class="brand">SATTEC</div>
     
-    <div class="screen-frame">
-        <img src="frame.png" alt="إطار الشاشة">
-    </div>
-    
-    <div class="video-container">
-        <video id="mainVideo" src="screen_video.mp4" loop playsinline preload="auto">
-            متصفحك لا يدعم تشغيل الفيديو
-        </video>
+    <!-- الإطار والفيديو معاً -->
+    <div class="screen-wrapper">
+        <img class="frame-bg" src="frame.png" alt="إطار الشاشة">
+        <div class="video-overlay">
+            <video id="mainVideo" src="screen_video.mp4" loop playsinline preload="auto">
+                متصفحك لا يدعم تشغيل الفيديو
+            </video>
+        </div>
     </div>
     
     <div class="buttons">
